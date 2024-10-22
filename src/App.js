@@ -12,9 +12,13 @@ export default function App() {
       setMessages((prevMessages) => [...prevMessages, message]);
       if (message.type === 'agent' && message.content) {
         console.log('AI agent message received, attempting to speak');
-        conversation.speak(message.content).catch(error => {
-          console.error('Error speaking message:', error);
-        });
+        conversation.speak(message.content)
+          .then(() => {
+            console.log('Speech successfully played');
+          })
+          .catch(error => {
+            console.error('Error speaking message:', error);
+          });
       }
     },
     onError: (error) => {
@@ -32,9 +36,14 @@ export default function App() {
         
         console.log('Starting conversation session');
         const conversationId = await conversation.startSession({
-          agentId: 'k3Y3836coPlICNgueuk0', // Using the provided agent ID
+          agentId: process.env.ELEVENLABS_AGENT_ID,
         });
         console.log('Conversation started:', conversationId);
+        
+        // Check and set volume
+        await conversation.setVolume({ volume: 1.0 });
+        console.log('Volume set to maximum');
+        
         setIsTalking(true);
       } catch (error) {
         console.error('Error starting conversation:', error);
