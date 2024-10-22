@@ -1,34 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SoundEffects from './SoundEffects';
 
-const CommandInput = ({ onSubmit }) => {
-  const [command, setCommand] = useState('');
+const hackerPhrases = [
+  "Bypassing firewall...",
+  "Cracking encryption...",
+  "Injecting malicious code...",
+  "Exploiting vulnerabilities...",
+  "Initiating DDoS attack...",
+  "Breaching mainframe...",
+  "Decrypting classified data...",
+  "Deploying trojan horse...",
+  "Intercepting network traffic...",
+  "Overriding security protocols...",
+];
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (command.trim()) {
-      onSubmit(command);
-      setCommand('');
-      SoundEffects.play('response');
-    }
-  };
+const CommandInput = () => {
+  const [currentPhrase, setCurrentPhrase] = useState('');
 
-  const handleKeyPress = () => {
-    SoundEffects.play('keyPress');
-  };
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      const randomIndex = Math.floor(Math.random() * hackerPhrases.length);
+      setCurrentPhrase(hackerPhrases[randomIndex]);
+      SoundEffects.play('keyPress');
+    }, 2000); // Change phrase every 2 seconds
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 flex">
+    <div className="mt-4 flex">
       <span className="text-green-400 mr-2">&gt;</span>
-      <input
-        type="text"
-        value={command}
-        onChange={(e) => setCommand(e.target.value)}
-        onKeyPress={handleKeyPress}
-        className="flex-grow bg-transparent text-green-400 focus:outline-none"
-        placeholder="Enter command..."
-      />
-    </form>
+      <div className="flex-grow text-green-400">
+        {currentPhrase}
+        <span className="animate-pulse">█</span>
+      </div>
+    </div>
   );
 };
 

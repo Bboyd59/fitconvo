@@ -22,13 +22,11 @@ const ASCII_LOGO = `
      @@@@@@@       @@@@@@  @@@@@     
 `;
 
-const RetroHackerTerminal = ({ isTalking }) => {
-  const [transcript, setTranscript] = useState([]);
+const RetroHackerTerminal = ({ isTalking, transcript, isSpeaking }) => {
   const [cursorVisible, setCursorVisible] = useState(true);
   const [logoFrame, setLogoFrame] = useState(0);
   const [audioLevels, setAudioLevels] = useState(Array(10).fill(0));
   const transcriptRef = useRef(null);
-  const [command, setCommand] = useState('');
 
   useEffect(() => {
     const cursorInterval = setInterval(() => {
@@ -45,32 +43,11 @@ const RetroHackerTerminal = ({ isTalking }) => {
         setAudioLevels(Array(10).fill(0).map(() => Math.random()));
       }, 100);
 
-      const messages = [
-        "INITIALIZING SYSTEM...",
-        "ESTABLISHING SECURE CONNECTION...",
-        "BYPASSING FIREWALLS...",
-        "ACCESSING MAINFRAME...",
-        "DECRYPTING DATA STREAMS...",
-        "NEURAL INTERFACE ONLINE.",
-        "READY FOR INPUT. PROCEED WITH CAUTION.",
-      ];
-      let index = 0;
-      const textInterval = setInterval(() => {
-        if (index < messages.length) {
-          setTranscript(prev => [...prev, messages[index]]);
-          index++;
-        } else {
-          clearInterval(textInterval);
-        }
-      }, 1000);
-
       return () => {
         clearInterval(animationInterval);
-        clearInterval(textInterval);
       };
     } else {
       setLogoFrame(0);
-      setTranscript([]);
       setAudioLevels(Array(10).fill(0));
     }
   }, [isTalking]);
@@ -94,12 +71,6 @@ const RetroHackerTerminal = ({ isTalking }) => {
     return line;
   }).join('\n');
 
-  const handleCommandSubmit = (cmd) => {
-    setTranscript(prev => [...prev, `> ${cmd}`]);
-    // Here you can add logic to process the command
-    setCommand('');
-  };
-
   return (
     <div className="font-mono text-green-400 bg-black p-4 rounded-lg shadow-lg w-full max-w-2xl border-2 border-green-400 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full bg-green-400 opacity-5 pointer-events-none"></div>
@@ -113,7 +84,7 @@ const RetroHackerTerminal = ({ isTalking }) => {
                 <span className="text-yellow-400">[{new Date().toLocaleTimeString()}]</span> {line}
               </div>
             ))}
-            {isTalking && (
+            {isTalking && isSpeaking && (
               <div className="flex items-center">
                 <span className="text-yellow-400">[{new Date().toLocaleTimeString()}]</span>
                 <span className={`ml-1 ${cursorVisible ? 'opacity-100' : 'opacity-0'}`}>▋</span>
@@ -121,7 +92,7 @@ const RetroHackerTerminal = ({ isTalking }) => {
             )}
           </div>
         </div>
-        <CommandInput onSubmit={handleCommandSubmit} />
+        <CommandInput />
       </div>
     </div>
   );
