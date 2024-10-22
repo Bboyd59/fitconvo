@@ -29,3 +29,4 @@ waitForPort = 80
 
 [deployment]
 run = ["sh", "-c", "npm run build && python main.py"]
+deploymentTarget = "cloudrun"
