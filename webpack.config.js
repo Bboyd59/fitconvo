@@ -1,5 +1,4 @@
 const path = require('path');
-const webpack = require('webpack');
 
 module.exports = {
   entry: './src/index.js',
@@ -24,9 +23,4 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx'],
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      'process.env.ELEVENLABS_AGENT_ID': JSON.stringify(process.env.ELEVENLABS_AGENT_ID)
-    })
-  ]
 };
