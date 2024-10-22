@@ -8,7 +8,14 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const conversation = useConversation({
     onMessage: (message) => {
+      console.log('Received message:', message);
       setMessages((prevMessages) => [...prevMessages, message]);
+      if (message.type === 'agent' && message.content) {
+        console.log('AI agent message received, attempting to speak');
+        conversation.speak(message.content).catch(error => {
+          console.error('Error speaking message:', error);
+        });
+      }
     },
     onError: (error) => {
       console.error('Conversation error:', error);
@@ -19,7 +26,11 @@ export default function App() {
     if (!isTalking) {
       SoundEffects.play('initiate');
       try {
+        console.log('Requesting microphone permissions');
         await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log('Microphone permissions granted');
+        
+        console.log('Starting conversation session');
         const conversationId = await conversation.startSession({
           agentId: process.env.ELEVENLABS_AGENT_ID,
         });
@@ -30,6 +41,7 @@ export default function App() {
       }
     } else {
       SoundEffects.play('terminate');
+      console.log('Ending conversation session');
       await conversation.endSession();
       setIsTalking(false);
     }
@@ -38,6 +50,7 @@ export default function App() {
   useEffect(() => {
     return () => {
       if (isTalking) {
+        console.log('Cleaning up: ending conversation session');
         conversation.endSession();
       }
     };
