@@ -12,16 +12,12 @@ export default function App() {
   const conversation = useConversation({
     onMessage: (message) => {
       console.log('Received message:', message);
+      setMessages((prevMessages) => [...prevMessages, message]);
       if (message.source === 'ai') {
-        setMessages((prevMessages) => [...prevMessages, message]);
-        console.log('AI agent message received, attempting to speak');
+        console.log('AI message received, attempting to speak:', message.content);
         conversation.speak(message.content)
-          .then(() => {
-            console.log('Speech successfully played');
-          })
-          .catch(error => {
-            console.error('Error speaking message:', error);
-          });
+          .then(() => console.log('Speech successfully played'))
+          .catch(error => console.error('Error speaking message:', error));
       }
     },
     onError: (error) => {
@@ -33,20 +29,11 @@ export default function App() {
     if (!isTalking) {
       SoundEffects.play('initiate');
       try {
-        console.log('Requesting microphone permissions');
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        console.log('Microphone permissions granted');
-        
-        console.log('Starting conversation session');
+        console.log('Starting conversation with agent ID:', process.env.ELEVENLABS_AGENT_ID);
         const conversationId = await conversation.startSession({
           agentId: process.env.ELEVENLABS_AGENT_ID,
         });
         console.log('Conversation started:', conversationId);
-        
-        // Check and set volume
-        await conversation.setVolume({ volume: 1.0 });
-        console.log('Volume set to maximum');
-        
         setIsTalking(true);
         setIsConversationActive(true);
         conversationStartTimeRef.current = Date.now();
@@ -54,21 +41,17 @@ export default function App() {
         console.error('Error starting conversation:', error);
       }
     } else {
-      const currentTime = Date.now();
-      const conversationDuration = currentTime - conversationStartTimeRef.current;
-      
-      if (conversationDuration < 5000) {
-        console.log('Conversation too short, waiting before ending');
-        return;
-      }
-      
+      console.log('Ending conversation');
       SoundEffects.play('terminate');
-      console.log('Ending conversation session');
       await conversation.endSession();
       setIsTalking(false);
       setIsConversationActive(false);
     }
   };
+
+  useEffect(() => {
+    console.log('Conversation status:', conversation.status);
+  }, [conversation.status]);
 
   useEffect(() => {
     return () => {
