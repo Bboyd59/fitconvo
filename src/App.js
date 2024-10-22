@@ -32,7 +32,7 @@ export default function App() {
         
         console.log('Starting conversation session');
         const conversationId = await conversation.startSession({
-          agentId: process.env.ELEVENLABS_AGENT_ID,
+          agentId: 'k3Y3836coPlICNgueuk0', // Using the provided agent ID
         });
         console.log('Conversation started:', conversationId);
         setIsTalking(true);
