@@ -7,7 +7,7 @@ export default function App() {
   const [isTalking, setIsTalking] = useState(false);
   const [messages, setMessages] = useState([]);
   const [isConversationActive, setIsConversationActive] = useState(false);
-  const conversationStartTimeRef = useRef(null);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const conversation = useConversation({
     onMessage: (message) => {
@@ -22,6 +22,7 @@ export default function App() {
     },
     onError: (error) => {
       console.error('Conversation error:', error);
+      setErrorMessage('An error occurred during the conversation. Please try again.');
     },
   });
 
@@ -36,9 +37,10 @@ export default function App() {
         console.log('Conversation started:', conversationId);
         setIsTalking(true);
         setIsConversationActive(true);
-        conversationStartTimeRef.current = Date.now();
+        setErrorMessage('');
       } catch (error) {
         console.error('Error starting conversation:', error);
+        setErrorMessage('Failed to start the conversation. Please try again.');
       }
     } else {
       console.log('Ending conversation');
@@ -54,6 +56,17 @@ export default function App() {
   }, [conversation.status]);
 
   useEffect(() => {
+    if (isConversationActive) {
+      const keepAliveInterval = setInterval(() => {
+        console.log('Keeping conversation alive');
+        // You can add any lightweight action here to keep the connection active
+      }, 5000); // Send a keep-alive signal every 5 seconds
+
+      return () => clearInterval(keepAliveInterval);
+    }
+  }, [isConversationActive]);
+
+  useEffect(() => {
     return () => {
       if (isTalking) {
         console.log('Cleaning up: ending conversation session');
@@ -65,10 +78,10 @@ export default function App() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 p-4">
       <RetroHackerTerminal isTalking={isTalking} messages={messages} />
+      {errorMessage && <div className="text-red-500 mb-4">{errorMessage}</div>}
       <button
         className="mt-8 px-6 py-3 bg-green-500 text-black font-mono rounded hover:bg-green-400 transition-colors uppercase font-bold tracking-wider border-2 border-green-400 shadow-lg"
         onClick={handleToggleTalking}
-        disabled={!isConversationActive && isTalking}
       >
         {isTalking ? 'TERMINATE' : 'INITIATE'}
       </button>
