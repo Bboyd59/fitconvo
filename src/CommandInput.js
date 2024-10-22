@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SoundEffects from './SoundEffects';
 
 const CommandInput = ({ onSubmit }) => {
   const [command, setCommand] = useState('');
@@ -8,7 +9,12 @@ const CommandInput = ({ onSubmit }) => {
     if (command.trim()) {
       onSubmit(command);
       setCommand('');
+      SoundEffects.play('response');
     }
+  };
+
+  const handleKeyPress = () => {
+    SoundEffects.play('keyPress');
   };
 
   return (
@@ -18,6 +24,7 @@ const CommandInput = ({ onSubmit }) => {
         type="text"
         value={command}
         onChange={(e) => setCommand(e.target.value)}
+        onKeyPress={handleKeyPress}
         className="flex-grow bg-transparent text-green-400 focus:outline-none"
         placeholder="Enter command..."
       />
