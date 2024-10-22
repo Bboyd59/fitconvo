@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import SystemStatus from './SystemStatus';
+import CommandInput from './CommandInput';
 
 const ASCII_LOGO = `
                          @@@@@@@     
@@ -26,6 +28,7 @@ const RetroHackerTerminal = ({ isTalking }) => {
   const [logoFrame, setLogoFrame] = useState(0);
   const [audioLevels, setAudioLevels] = useState(Array(10).fill(0));
   const transcriptRef = useRef(null);
+  const [command, setCommand] = useState('');
 
   useEffect(() => {
     const cursorInterval = setInterval(() => {
@@ -91,20 +94,18 @@ const RetroHackerTerminal = ({ isTalking }) => {
     return line;
   }).join('\n');
 
+  const handleCommandSubmit = (cmd) => {
+    setTranscript(prev => [...prev, `> ${cmd}`]);
+    // Here you can add logic to process the command
+    setCommand('');
+  };
+
   return (
     <div className="font-mono text-green-400 bg-black p-4 rounded-lg shadow-lg w-full max-w-2xl border-2 border-green-400 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full bg-green-400 opacity-5 pointer-events-none"></div>
       <div className="relative">
         <pre className="whitespace-pre-wrap text-xs leading-3 mb-4">{animatedLogo}</pre>
-        <div className="h-12 flex justify-between items-end mb-2">
-          {audioLevels.map((level, index) => (
-            <div
-              key={index}
-              className="w-2 bg-green-400"
-              style={{ height: `${level * 100}%`, transition: 'height 0.1s ease-out' }}
-            ></div>
-          ))}
-        </div>
+        <SystemStatus audioLevels={audioLevels} />
         <div className="mt-4 border-t border-green-400 pt-4">
           <div ref={transcriptRef} className="h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-green-400 scrollbar-track-black">
             {transcript.map((line, index) => (
@@ -115,11 +116,12 @@ const RetroHackerTerminal = ({ isTalking }) => {
             {isTalking && (
               <div className="flex items-center">
                 <span className="text-yellow-400">[{new Date().toLocaleTimeString()}]</span>
-                <span className="ml-1 animate-pulse">▋</span>
+                <span className={`ml-1 ${cursorVisible ? 'opacity-100' : 'opacity-0'}`}>▋</span>
               </div>
             )}
           </div>
         </div>
+        <CommandInput onSubmit={handleCommandSubmit} />
       </div>
     </div>
   );
