@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useConversation } from '@11labs/react';
 import RetroHackerTerminal from './RetroHackerTerminal';
 import SoundEffects from './SoundEffects';
@@ -6,11 +6,14 @@ import SoundEffects from './SoundEffects';
 export default function App() {
   const [isTalking, setIsTalking] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [isConversationActive, setIsConversationActive] = useState(false);
+  const conversationStartTimeRef = useRef(null);
+
   const conversation = useConversation({
     onMessage: (message) => {
       console.log('Received message:', message);
-      setMessages((prevMessages) => [...prevMessages, message]);
-      if (message.type === 'agent' && message.content) {
+      if (message.source === 'ai') {
+        setMessages((prevMessages) => [...prevMessages, message]);
         console.log('AI agent message received, attempting to speak');
         conversation.speak(message.content)
           .then(() => {
@@ -45,14 +48,25 @@ export default function App() {
         console.log('Volume set to maximum');
         
         setIsTalking(true);
+        setIsConversationActive(true);
+        conversationStartTimeRef.current = Date.now();
       } catch (error) {
         console.error('Error starting conversation:', error);
       }
     } else {
+      const currentTime = Date.now();
+      const conversationDuration = currentTime - conversationStartTimeRef.current;
+      
+      if (conversationDuration < 5000) {
+        console.log('Conversation too short, waiting before ending');
+        return;
+      }
+      
       SoundEffects.play('terminate');
       console.log('Ending conversation session');
       await conversation.endSession();
       setIsTalking(false);
+      setIsConversationActive(false);
     }
   };
 
@@ -71,6 +85,7 @@ export default function App() {
       <button
         className="mt-8 px-6 py-3 bg-green-500 text-black font-mono rounded hover:bg-green-400 transition-colors uppercase font-bold tracking-wider border-2 border-green-400 shadow-lg"
         onClick={handleToggleTalking}
+        disabled={!isConversationActive && isTalking}
       >
         {isTalking ? 'TERMINATE' : 'INITIATE'}
       </button>
